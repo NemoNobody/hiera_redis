@@ -1,6 +1,6 @@
 {
   "name": "maxadamo-hiera_redis",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "author": "maxadamo",
   "summary": "A Hiera 5 backend for Redis",
   "license": "Apache-2.0",
