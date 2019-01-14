@@ -93,6 +93,6 @@ PRs welcome.
 
 ## Credits
 
-This repository was initially a fork from [andrewm3 hiera_redis](https://github.com/andrewm3/hiera_redis), but since it has diverged and the original module is not being updated, it is now showing as a new module, wuth a mention to the original authors.
+This repository was initially a fork from [andrewm3 hiera_redis](https://github.com/andrewm3/hiera_redis) repo, but since it has diverged and the original module is not being updated, it is now showing as a new module, with a specific mention to the original authors.
 
-The code to related to `confine_to_keys` from [petems hiera_vault](https://github.com/petems/petems-hiera_vault) repository. I thought it was a good example and I wanted to make it as default.
+The code to related to `confine_to_keys` comes from [petems hiera_vault](https://github.com/petems/petems-hiera_vault) repository. I thought it was a good example and I wanted to make it as default.
