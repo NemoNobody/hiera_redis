@@ -1,8 +1,9 @@
 Puppet::Functions.create_function(:redis_lookup_key) do
   begin
     require 'redis'
+
   rescue LoadError
-    raise Puppet::DataBinding::LookupError, 'The redis gem must be installed to use redis_lookup_key'
+    raise Puppet::DataBinding::LookupError, 'The redis,json,yaml gem must be installed to use redis_lookup_key'
   end
 
   dispatch :redis_lookup_key do
@@ -39,7 +40,7 @@ Puppet::Functions.create_function(:redis_lookup_key) do
     scopes    = options['scopes']    || [options['scope']]
     separator = options['separator'] || ':'
 
-    redis = if !socket.nil? && !password.nil?
+     redis = if !socket.nil? && !password.nil?
               Redis.new(path: socket, password: password, db: db)
             elsif !socket.nil? && password.nil?
               Redis.new(path: socket, db: db)
@@ -57,7 +58,11 @@ Puppet::Functions.create_function(:redis_lookup_key) do
     end
 
     context.not_found if result.nil?
-    context.cache(key, result)
+    if (result.include? "{") && (result.include? "}")
+       context.cache(key, Hash($result))
+    else
+       context.cache(key, result)
+    end
   end
 
   def redis_get(redis, key)
