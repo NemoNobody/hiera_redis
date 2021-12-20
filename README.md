@@ -92,6 +92,6 @@ Tested partly for puppet5, use for you own risk.
 
 ## Credits
 
-This repository was initially a fork from [maxadamo hiera_redis](https://github.com/maxadamo/hiera_redis) repo, but since it has diverged and the original module is not being updated, it is now showing as a new module, with a specific mention to the original authors.
+This repository was initially a fork from [maxadamo hiera_redis](https://github.com/maxadamo/hiera_redis) repo, forked for add some fix.
 
 The code to related to add supporting of getting hashes also from hiera redis storage. For now if in recieved result from redis we have "{" and "}" symvols, we will change type of result as HASH and puppet will be use result from redis as hash.
