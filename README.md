@@ -14,6 +14,7 @@
 ## Description
 
 This module provides a Hiera 5 backend for Redis.
+With support recieve from redis hash instead String only
 
 ## Setup
 
@@ -75,7 +76,9 @@ The other options available include:
 * `scope`: The scope to use when querying the database.
 * `scopes`: An array of scopes to query. Cannot be used in conjunction with the `scope` option.
 * `separator`: The character separator between the scope and key being queried. Defaults to ':'.
-* `confine_to_keys`: Only use this backend if the key matches one of the regexes in the array:
+* `confine_to_keys`: Only use this backend if the key matches one of the regexes in the array.
+
+### confine_to_keys config example:
 
 ```yaml
   confine_to_keys:
@@ -85,14 +88,10 @@ The other options available include:
 
 ## Limitations
 
-This module has only been tested on CentOS.
-
-## Development
-
-PRs welcome.
+Tested partly for puppet5, use for you own risk.
 
 ## Credits
 
-This repository was initially a fork from [andrewm3 hiera_redis](https://github.com/andrewm3/hiera_redis) repo, but since it has diverged and the original module is not being updated, it is now showing as a new module, with a specific mention to the original authors.
+This repository was initially a fork from [maxadamo hiera_redis](https://github.com/maxadamo/hiera_redis) repo, but since it has diverged and the original module is not being updated, it is now showing as a new module, with a specific mention to the original authors.
 
-The code to related to `confine_to_keys` comes from [petems hiera_vault](https://github.com/petems/petems-hiera_vault) repository. I thought it was a good example and I wanted to make it as default.
+The code to related to add supporting of getting hashes also from hiera redis storage. For now if in recieved result from redis we have "{" and "}" symvols, we will change type of result as HASH and puppet will be use result from redis as hash.
