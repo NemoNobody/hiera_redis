@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 
 **Features**
 
+* added condition for detect hash in data into redis key and change result type to HASH type for puppet.
+
 **Bugfixes**
 
 **Known Issues**
