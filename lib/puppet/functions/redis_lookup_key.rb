@@ -3,7 +3,7 @@ Puppet::Functions.create_function(:redis_lookup_key) do
     require 'redis'
 
   rescue LoadError
-    raise Puppet::DataBinding::LookupError, 'The redis,json,yaml gem must be installed to use redis_lookup_key'
+    raise Puppet::DataBinding::LookupError, 'The redis  gem must be installed to use redis_lookup_key'
   end
 
   dispatch :redis_lookup_key do
