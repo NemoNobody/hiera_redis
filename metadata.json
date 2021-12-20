@@ -1,12 +1,12 @@
 {
-  "name": "maxadamo-hiera_redis",
-  "version": "0.3.1",
-  "author": "maxadamo",
-  "summary": "A Hiera 5 backend for Redis",
+  "name": "mrnobody-hiera_redis",
+  "version": "0.1.0",
+  "author": "mrnobody",
+  "summary": "A Hiera 5 backend for Redis with HASH type checking into redis key data",
   "license": "Apache-2.0",
-  "source": "https://github.com/maxadamo/hiera_redis",
-  "project_page": "https://github.com/maxadamo/hiera_redis",
-  "issues_url": "https://github.com/maxadamo/hiera_redis/issues",
+  "source": "https://github.com/NemoNobody/hiera_redis",
+  "project_page": "https://github.com/NemoNobody/hiera_redis",
+  "issues_url": "https://github.com/NemoNobody/hiera_redis/issues",
   "dependencies": [
 
   ],
