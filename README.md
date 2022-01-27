@@ -14,7 +14,8 @@
 ## Description
 
 This module provides a Hiera 5 backend for Redis.
-With support recieve from redis hash instead String only
+With support recieve from redis hash instead String only. JSON requered for this module.
+Also support interpolate results from redis - patterns in result like `%{hiera('somekey')}` or  `%{lookup('somekey')}`  will be replaced to `somekey` value from Hiera.
 
 ## Setup
 
@@ -30,6 +31,8 @@ It is also recommended to install the gem into the agent's Ruby:
     /opt/puppetlabs/puppet/bin/gem install redis
 
 This allows commands such as `puppet apply` or `puppet lookup` to use the backend.
+
+Also need to install `json` gem
 
 ### Beginning with hiera_redis
 
