@@ -1,9 +1,10 @@
 Puppet::Functions.create_function(:redis_lookup_key) do
   begin
     require 'redis'
+    require 'json'
 
   rescue LoadError
-    raise Puppet::DataBinding::LookupError, 'The redis  gem must be installed to use redis_lookup_key'
+    raise Puppet::DataBinding::LookupError, 'The redis and json  gem must be installed to use redis_lookup_key'
   end
 
   dispatch :redis_lookup_key do
@@ -54,15 +55,30 @@ Puppet::Functions.create_function(:redis_lookup_key) do
     scopes.each do |scope|
       redis_key = scope.nil? ? key : [scope, key].join(separator)
       result = redis_get(redis, redis_key)
+
       break unless result.nil?
     end
 
     context.not_found if result.nil?
-    if (result.include? "{") && (result.include? "}")
-       context.cache(key, Hash($result))
+   
+    # if result contains some hiera or lookup pattern for interpolate it, we need try to make it
+    #to interpolate some subincluded lookups neet interpolate result in first.
+    if (result.include? "%{hiera") || (result.include? "%{lookup")
+      result =  context.interpolate(result)
+    end
+    # if we can validate json in result, we need to make it and change type of result for context.
+    if valid_json(result)
+       context.cache(key, Hash(JSON.parse(result)))
     else
        context.cache(key, result)
     end
+  end
+# we just trt validate it, if we can without error - return true, if not - false.
+  def valid_json(json)
+      JSON.parse(json)
+      return true
+  rescue TypeError, JSON::ParserError => e
+     return false
   end
 
   def redis_get(redis, key)
@@ -80,3 +96,4 @@ Puppet::Functions.create_function(:redis_lookup_key) do
     end
   end
 end
+
