@@ -40,15 +40,20 @@ Puppet::Functions.create_function(:redis_lookup_key) do
     db        = options['db']        || 0
     scopes    = options['scopes']    || [options['scope']]
     separator = options['separator'] || ':'
-
+# timeout options, by default 0.5 seconds
+    connect_timeout = options['connect_timeout'] || 0.5
+    read_timeout = options['read_timeout'] || 0.5
+    write_timeout = options['write_timeout'] || 0.5
+# added timeouts for redis connections
+# without it, we will get a lot of not closed TCP connections
      redis = if !socket.nil? && !password.nil?
-              Redis.new(path: socket, password: password, db: db)
+              Redis.new(path: socket, password: password, db: db, connect_timeout: connect_timeout, read_timeout: read_timeout, write_timeout: write_timeout)
             elsif !socket.nil? && password.nil?
-              Redis.new(path: socket, db: db)
+              Redis.new(path: socket, db: db, connect_timeout: connect_timeout, read_timeout: read_timeout, write_timeout: write_timeout)
             elsif socket.nil? && !password.nil?
-              Redis.new(password: password, host: host, port: port, db: db)
+              Redis.new(password: password, host: host, port: port, db: db, connect_timeout: connect_timeout, read_timeout: read_timeout, write_timeout: write_timeout)
             else
-              Redis.new(host: host, port: port, db: db)
+              Redis.new(host: host, port: port, db: db, connect_timeout: connect_timeout, read_timeout: read_timeout, write_timeout: write_timeout)
             end
     result = nil
 
@@ -58,9 +63,10 @@ Puppet::Functions.create_function(:redis_lookup_key) do
 
       break unless result.nil?
     end
+# close redis connection, for fix issue with TCP connects
+    redis.close()
 
     context.not_found if result.nil?
-   
     # if result contains some hiera or lookup pattern for interpolate it, we need try to make it
     #to interpolate some subincluded lookups neet interpolate result in first.
     if (result.include? "%{hiera") || (result.include? "%{lookup")
