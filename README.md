@@ -80,6 +80,9 @@ The other options available include:
 * `scopes`: An array of scopes to query. Cannot be used in conjunction with the `scope` option.
 * `separator`: The character separator between the scope and key being queried. Defaults to ':'.
 * `confine_to_keys`: Only use this backend if the key matches one of the regexes in the array.
+* `connect_timeout`: connect timeout to redis, seconds. Default 0.5
+* `read_timeout`: read timeout for redis, seconds. Default 0.5
+* `write_timeout`: write timeout for redis, seconds. Default 0.5
 
 ### confine_to_keys config example:
 

@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## Release 0.3.0 
+
+** Bugfixes **
+
+* Added `redis.close()` action for closing redis connection, without this, we probably will have issues with free TCP sockets on puppetserver
+
+** Features **
+
+* Added timeouts to redis connections, also added options to configure it, see more in README. by default all timeouts 0.5 seconds(read,write,connect).
+
+
 ## Release 0.2.0
 
 
