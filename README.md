@@ -73,6 +73,7 @@ The other options available include:
 
 * `host`: The host that Redis is located on. Defaults to 'localhost'.
 * `port`: The port that Redis is running on. Defaults to 6379.
+* `sentinel`: Sentinel configuration (described below)
 * `socket`: Optional Unix socket path
 * `password`: Optional Redis password
 * `db`: The database number to query on the Redis instance. Defaults to 0.
@@ -90,6 +91,29 @@ The other options available include:
   confine_to_keys:
     - "application.*"
     - "apache::.*"
+```
+
+### Sentinel configuration
+
+Include the `sentinel` key in `options` and then use the following config (from [Redis gem v5.0.7](https://www.rubydoc.info/gems/redis/5.0.7#sentinel-support))
+`password` key is optional.
+
+```yaml
+---
+version: 5
+hierarchy:
+  - name: hiera_redis
+    lookup_key: redis_lookup_key
+    options:
+      sentinel:
+        name: mymaster
+        sentinels:
+          - host: '127.0.0.1'
+            port: 26380
+            password: optional_password
+          - host: '127.0.0.1'
+            port: 26381
+            password: optional_password
 ```
 
 ## Limitations
