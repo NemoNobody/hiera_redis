@@ -48,7 +48,13 @@ Puppet::Functions.create_function(:redis_lookup_key) do
 # added timeouts for redis connections
 # without it, we will get a lot of not closed TCP connections
      redis = if !sentinel.nil?
-               Redis.new(name: sentinel['name'], sentinels: sentinel['sentinels'], role: :slave)
+               begin
+                 Redis.new(name: sentinel['name'], sentinels: sentinel['sentinels'], role: :replica)
+               rescue RedisClient::ConnectionError => e
+                 if e.message.include? "Couldn't locate a replica"
+                   Redis.new(name: sentinel['name'], sentinels: sentinel['sentinels'], role: :master)
+                 end
+               end
              elsif !socket.nil? && !password.nil?
                Redis.new(path: socket, password: password, db: db, connect_timeout: connect_timeout, read_timeout: read_timeout, write_timeout: write_timeout)
              elsif !socket.nil? && password.nil?
