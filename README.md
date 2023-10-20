@@ -98,8 +98,6 @@ The other options available include:
 Include the `sentinel` key in `options` and then use the following config (from [Redis gem v5.0.7](https://www.rubydoc.info/gems/redis/5.0.7#sentinel-support))
 `password` key is optional.
 
-__IMPORTANT:__ The `sentinels` elements' hash keys need to be __:symbols__
-
 ```yaml
 ---
 version: 5
@@ -110,12 +108,12 @@ hierarchy:
       sentinel:
         name: mymaster
         sentinels:
-          - :host: '127.0.0.1'
-            :port: 26380
-            :password: optional_password
-          - :host: '127.0.0.1'
-            :port: 26381
-            :password: optional_password
+          - host: '127.0.0.1'
+            port: 26380
+            password: optional_password
+          - host: '127.0.0.1'
+            port: 26381
+            password: optional_password
 ```
 
 ## Limitations

@@ -47,23 +47,24 @@ Puppet::Functions.create_function(:redis_lookup_key) do
     write_timeout = options['write_timeout'] || 0.5
 # added timeouts for redis connections
 # without it, we will get a lot of not closed TCP connections
-     redis = if !sentinel.nil?
-               begin
-                 Redis.new(name: sentinel['name'], sentinels: sentinel['sentinels'], role: :replica)
-               rescue RedisClient::ConnectionError => e
-                 if e.message.include? "Couldn't locate a replica"
-                   Redis.new(name: sentinel['name'], sentinels: sentinel['sentinels'], role: :master)
-                 end
-               end
-             elsif !socket.nil? && !password.nil?
-               Redis.new(path: socket, password: password, db: db, connect_timeout: connect_timeout, read_timeout: read_timeout, write_timeout: write_timeout)
-             elsif !socket.nil? && password.nil?
-               Redis.new(path: socket, db: db, connect_timeout: connect_timeout, read_timeout: read_timeout, write_timeout: write_timeout)
-             elsif socket.nil? && !password.nil?
-               Redis.new(password: password, host: host, port: port, db: db, connect_timeout: connect_timeout, read_timeout: read_timeout, write_timeout: write_timeout)
-             else
-               Redis.new(host: host, port: port, db: db, connect_timeout: connect_timeout, read_timeout: read_timeout, write_timeout: write_timeout)
-             end
+    redis = if !sentinel.nil?
+              sentinels = sentinel['sentinels'].map { |val| val.transform_keys(&:to_sym) }
+              begin
+                Redis.new(name: sentinel['name'], sentinels: sentinels, role: :replica)
+              rescue RedisClient::ConnectionError => e
+                if e.message.include? "Couldn't locate a replica"
+                  Redis.new(name: sentinel['name'], sentinels: sentinels, role: :master)
+                end
+              end
+            elsif !socket.nil? && !password.nil?
+              Redis.new(path: socket, password: password, db: db, connect_timeout: connect_timeout, read_timeout: read_timeout, write_timeout: write_timeout)
+            elsif !socket.nil? && password.nil?
+              Redis.new(path: socket, db: db, connect_timeout: connect_timeout, read_timeout: read_timeout, write_timeout: write_timeout)
+            elsif socket.nil? && !password.nil?
+              Redis.new(password: password, host: host, port: port, db: db, connect_timeout: connect_timeout, read_timeout: read_timeout, write_timeout: write_timeout)
+            else
+              Redis.new(host: host, port: port, db: db, connect_timeout: connect_timeout, read_timeout: read_timeout, write_timeout: write_timeout)
+            end
     result = nil
 
     scopes.each do |scope|
