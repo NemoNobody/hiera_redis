@@ -50,12 +50,14 @@ Puppet::Functions.create_function(:redis_lookup_key) do
     redis = if !sentinel.nil?
               sentinels = sentinel['sentinels'].map { |val| val.transform_keys(&:to_sym) }
               begin
-                tred = Redis.new(name: sentinel['name'], sentinels: sentinels, role: :replica)
+                tred = Redis.new(name: sentinel['name'], sentinels: sentinels, role: :replica, db: db, connect_timeout: connect_timeout, read_timeout: read_timeout, write_timeout: write_timeout)
+                # this is necessary in order to trigger the potential connection error
+                #   early enough to try other connection options
                 tred.ping
                 tred
               rescue Redis::BaseError => e
                 if e.message.include? "Couldn't locate a replica"
-                  Redis.new(name: sentinel['name'], sentinels: sentinels, role: :master)
+                  tred = Redis.new(name: sentinel['name'], sentinels: sentinels, role: :master, db: db, connect_timeout: connect_timeout, read_timeout: read_timeout, write_timeout: write_timeout)
                 end
               end
             elsif !socket.nil? && !password.nil?
