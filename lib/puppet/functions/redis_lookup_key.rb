@@ -41,13 +41,15 @@ Puppet::Functions.create_function(:redis_lookup_key) do
     db        = options['db']        || 0
     scopes    = options['scopes']    || [options['scope']]
     separator = options['separator'] || ':'
-# timeout options, by default 0.5 seconds
+
+    # timeout options, by default 0.5 seconds
+    # added timeouts for redis connections
+    # without it, we will get a lot of not closed TCP connections
     connect_timeout = options['connect_timeout'] || 0.5
     read_timeout = options['read_timeout'] || 0.5
     write_timeout = options['write_timeout'] || 0.5
-# added timeouts for redis connections
-# without it, we will get a lot of not closed TCP connections
-    @redis = begin
+
+    @redis = @redis || begin
       Puppet.debug('hiera-redis: Setting up Redis connection')
       if !sentinel.nil?
         Puppet.debug('hiera-redis: Using Redis sentinel')
@@ -86,8 +88,6 @@ Puppet::Functions.create_function(:redis_lookup_key) do
 
       break unless result.nil?
     end
-    # close redis connection, for fix issue with TCP connects
-    @redis.close()
 
     context.not_found if result.nil?
     # if result contains some hiera or lookup pattern for interpolate it, we need try to make it
