@@ -87,7 +87,7 @@ Puppet::Functions.create_function(:redis_lookup_key) do
       break unless result.nil?
     end
     # close redis connection, for fix issue with TCP connects
-    redis.close()
+    @redis.close()
 
     context.not_found if result.nil?
     # if result contains some hiera or lookup pattern for interpolate it, we need try to make it
