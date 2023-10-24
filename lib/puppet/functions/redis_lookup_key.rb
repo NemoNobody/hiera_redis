@@ -47,7 +47,7 @@ Puppet::Functions.create_function(:redis_lookup_key) do
     write_timeout = options['write_timeout'] || 0.5
 # added timeouts for redis connections
 # without it, we will get a lot of not closed TCP connections
-    @redis = @redis || {
+    @redis = @redis || begin
       debug('hiera-redis: Setting up Redis connection')
       if !sentinel.nil?
         debug('hiera-redis: Using Redis sentinel')
@@ -76,7 +76,7 @@ Puppet::Functions.create_function(:redis_lookup_key) do
         debug('hiera-redis: Using TCP without password')
         Redis.new(host: host, port: port, db: db, connect_timeout: connect_timeout, read_timeout: read_timeout, write_timeout: write_timeout)
       end
-    }
+    end
     result = nil
 
     scopes.each do |scope|
