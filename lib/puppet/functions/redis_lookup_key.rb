@@ -96,8 +96,13 @@ Puppet::Functions.create_function(:redis_lookup_key) do
       result =  context.interpolate(result)
     end
     # if we can validate json in result, we need to make it and change type of result for context.
-    if valid_json(result) && !([true, false].include?(result))
-      context.cache(key, Hash(JSON.parse(result)))
+    if valid_json(result)
+      sendval = JSON.parse(result)
+      if [true, false].include? sendval
+        context.cache(key, sendval)
+      else
+        context.cache(key, Hash(sendval))
+      end
     else
       context.cache(key, result)
     end
