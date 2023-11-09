@@ -96,18 +96,18 @@ Puppet::Functions.create_function(:redis_lookup_key) do
       result =  context.interpolate(result)
     end
     # if we can validate json in result, we need to make it and change type of result for context.
-    if valid_json(result)
-       context.cache(key, Hash(JSON.parse(result)))
+    if valid_json(result) && !([true, false].include?(result))
+      context.cache(key, Hash(JSON.parse(result)))
     else
-       context.cache(key, result)
+      context.cache(key, result)
     end
   end
 # we just trt validate it, if we can without error - return true, if not - false.
   def valid_json(json)
-      JSON.parse(json)
-      return true
+    JSON.parse(json)
+    return true
   rescue TypeError, JSON::ParserError => e
-     return false
+    return false
   end
 
   def redis_get(redis, key)
