@@ -35,36 +35,59 @@ Puppet::Functions.create_function(:redis_lookup_key) do
 
     host      = options['host']      || 'localhost'
     port      = options['port']      || 6379
+    sentinel  = options['sentinel']  || nil
     socket    = options['socket']    || nil
     password  = options['password']  || nil
     db        = options['db']        || 0
     scopes    = options['scopes']    || [options['scope']]
     separator = options['separator'] || ':'
-# timeout options, by default 0.5 seconds
+
+    # timeout options, by default 0.5 seconds
+    # added timeouts for redis connections
+    # without it, we will get a lot of not closed TCP connections
     connect_timeout = options['connect_timeout'] || 0.5
     read_timeout = options['read_timeout'] || 0.5
     write_timeout = options['write_timeout'] || 0.5
-# added timeouts for redis connections
-# without it, we will get a lot of not closed TCP connections
-     redis = if !socket.nil? && !password.nil?
-              Redis.new(path: socket, password: password, db: db, connect_timeout: connect_timeout, read_timeout: read_timeout, write_timeout: write_timeout)
-            elsif !socket.nil? && password.nil?
-              Redis.new(path: socket, db: db, connect_timeout: connect_timeout, read_timeout: read_timeout, write_timeout: write_timeout)
-            elsif socket.nil? && !password.nil?
-              Redis.new(password: password, host: host, port: port, db: db, connect_timeout: connect_timeout, read_timeout: read_timeout, write_timeout: write_timeout)
-            else
-              Redis.new(host: host, port: port, db: db, connect_timeout: connect_timeout, read_timeout: read_timeout, write_timeout: write_timeout)
-            end
+
+    @redis = @redis || begin
+      Puppet.debug('hiera-redis: Setting up Redis connection')
+      if !sentinel.nil?
+        Puppet.debug('hiera-redis: Using Redis sentinel')
+        sentinels = sentinel['sentinels'].map { |val| val.transform_keys(&:to_sym) }
+        begin
+          tred = Redis.new(name: sentinel['name'], sentinels: sentinels, role: :replica, db: db, connect_timeout: connect_timeout, read_timeout: read_timeout, write_timeout: write_timeout)
+          # this is necessary in order to trigger the potential connection error
+          #   early enough to try other connection options
+          tred.ping
+          tred
+        rescue Redis::BaseError => e
+          if e.message.include? "Couldn't locate a replica"
+            tred = Redis.new(name: sentinel['name'], sentinels: sentinels, role: :master, db: db, connect_timeout: connect_timeout, read_timeout: read_timeout, write_timeout: write_timeout)
+          end
+        end
+      elsif !socket.nil? && !password.nil?
+        Puppet.debug('hiera-redis: Using socket with password')
+        Redis.new(path: socket, password: password, db: db, connect_timeout: connect_timeout, read_timeout: read_timeout, write_timeout: write_timeout)
+      elsif !socket.nil? && password.nil?
+        Puppet.debug('hiera-redis: Using socket without password')
+        Redis.new(path: socket, db: db, connect_timeout: connect_timeout, read_timeout: read_timeout, write_timeout: write_timeout)
+      elsif socket.nil? && !password.nil?
+        Puppet.debug('hiera-redis: Using TCP with password')
+        Redis.new(password: password, host: host, port: port, db: db, connect_timeout: connect_timeout, read_timeout: read_timeout, write_timeout: write_timeout)
+      else
+        Puppet.debug('hiera-redis: Using TCP without password')
+        Redis.new(host: host, port: port, db: db, connect_timeout: connect_timeout, read_timeout: read_timeout, write_timeout: write_timeout)
+      end
+    end
     result = nil
 
     scopes.each do |scope|
       redis_key = scope.nil? ? key : [scope, key].join(separator)
-      result = redis_get(redis, redis_key)
+      Puppet.debug("hiera-redis: Looking up '#{redis_key}'")
+      result = redis_get(@redis, redis_key)
 
       break unless result.nil?
     end
-# close redis connection, for fix issue with TCP connects
-    redis.close()
 
     context.not_found if result.nil?
     # if result contains some hiera or lookup pattern for interpolate it, we need try to make it
@@ -74,17 +97,22 @@ Puppet::Functions.create_function(:redis_lookup_key) do
     end
     # if we can validate json in result, we need to make it and change type of result for context.
     if valid_json(result)
-       context.cache(key, Hash(JSON.parse(result)))
+      sendval = JSON.parse(result)
+      if [true, false].include? sendval
+        context.cache(key, sendval)
+      else
+        context.cache(key, Hash(sendval))
+      end
     else
-       context.cache(key, result)
+      context.cache(key, result)
     end
   end
 # we just trt validate it, if we can without error - return true, if not - false.
   def valid_json(json)
-      JSON.parse(json)
-      return true
+    JSON.parse(json)
+    return true
   rescue TypeError, JSON::ParserError => e
-     return false
+    return false
   end
 
   def redis_get(redis, key)
@@ -102,4 +130,3 @@ Puppet::Functions.create_function(:redis_lookup_key) do
     end
   end
 end
-
